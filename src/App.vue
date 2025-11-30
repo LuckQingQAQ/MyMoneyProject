@@ -21,7 +21,6 @@ import Sidedar from './component/Sidedar.vue';
 }
 
 body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
   background: #f5f7fa;
   /* 浅灰背景 */
   color: #333;
