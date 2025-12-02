@@ -8,10 +8,10 @@
             <router-link class="nav-link" to="/Dashboard">
                 <span class="nav-icon">📊</span> 仪表盘
             </router-link>
-            <router-link class="nav-link" to="/Transactions">
+            <router-link class="nav-link" to="/Reports">
                 <span class="nav-icon">📈</span> 报表分析
             </router-link>
-            <router-link class="nav-link" to="/Reports">
+            <router-link class="nav-link" to="/Transactions">
                 <span class="nav-icon">📝</span> 收支记录
             </router-link>
             <router-link class="nav-link" to="/Settings">
