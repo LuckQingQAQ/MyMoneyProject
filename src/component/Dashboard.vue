@@ -1,14 +1,16 @@
 <template>
-    <div>
-        <header>
-            <h1 class="content-title">财务仪表盘</h1>
-            <p class="content-subtitle">今日是{{ currentdate }}，来看看你的财务状况吧</p>
-        </header>
+    <header>
+        <h1 class="content-title">财务仪表盘</h1>
+        <p class="content-subtitle">今日是{{ currentdate }}，来看看你的财务状况吧</p>
+    </header>
+    <main>
+        <!-- 顶部卡片 -->
         <div class="stats-grid">
             <StatCard :value="10.9" label="本月收入" style="color: #4ADE80;"></StatCard>
             <StatCard :value="10.9" label="本月支出" style="color: #F87171;"></StatCard>
             <StatCard :value="10.9" label="本月结余" style="color: #60A5FA;"></StatCard>
         </div>
+        <!-- 最近交易记录表格 -->
         <div class="card">
             <h3 style="margin-bottom: 20px;">最近交易记录</h3>
             <div class="table-content">
@@ -35,12 +37,14 @@
                             <td>12.38</td>
                         </tr>
                     </tbody>
-
                 </table>
             </div>
         </div>
-    </div>
-    <QuickAction></QuickAction>
+    </main>
+    <footer>
+        <!--快速操作按钮-->
+        <QuickAction></QuickAction>
+    </footer>
 </template>
 
 <script setup>
