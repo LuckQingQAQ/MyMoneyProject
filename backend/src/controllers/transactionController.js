@@ -3,7 +3,7 @@ import pool from '../utils/db.js';
 // 获取所有交易记录
 export const getAllTransactions = async (req, res) => {
   try {
-    const [rows] = await pool.query('SELECT * FROM transactions ORDER BY trade_time DESC');
+    const [rows] = await pool.query('SELECT * FROM transactions ORDER BY trade_time');
     
     res.json({
       success: true,
