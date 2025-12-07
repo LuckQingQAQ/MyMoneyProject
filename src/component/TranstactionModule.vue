@@ -1,5 +1,5 @@
 <template>
-    <el-dialog v-model="dialogVisible" title="添加交易记录" width="500px">
+    <el-dialog v-model="dialogVisible" title="添加交易记录" width="500px" :show-close="false">
         <el-divider></el-divider>
         <el-form :model="formData" style="margin: 20px;">
             <el-form-item label="交易时间 :" required>
@@ -10,6 +10,7 @@
                 <el-select v-model="formData.direction">
                     <el-option label="收入" value="收入"></el-option>
                     <el-option label="支出" value="支出"></el-option>
+                    <el-option label="不计收支" value="不计收支"></el-option>
                 </el-select>
             </el-form-item>
             <el-form-item label="交易类型 :" required>
@@ -42,7 +43,7 @@
 <script setup>
 import { computed } from 'vue'
 const emit = defineEmits(['submitForm', 'cancelForm'])
-
+                                                    
 const expenseOptions = [
     '餐饮美食',
     '日常购物',

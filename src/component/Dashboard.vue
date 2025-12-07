@@ -87,12 +87,29 @@ watch(alltransactions, () => {
 async function calculateMonthlyStats(alltransactions) {
     let income = 0
     let expense = 0
-    console.log('Calculating monthly stats for transactions:', alltransactions)
+    const currentDate = new Date()
+    const currentYear = currentDate.getFullYear()
+    const currentMonth = currentDate.getMonth()
+    
+    console.log('Calculating monthly stats for current month:', currentYear, '年', currentMonth + 1, '月')
+    console.log('Total transactions:', alltransactions.value.length)
+    
     alltransactions.value.forEach(item => {
-        if (item.direction === '收入') {
-            income += item.amount
-        } else if (item.direction === '支出') {
-            expense += item.amount
+        const tradeDate = new Date(item.trade_time)
+        const tradeYear = tradeDate.getFullYear()
+        const tradeMonth = tradeDate.getMonth()
+        
+        // 只计算当前月份的数据
+        if (tradeYear === currentYear && tradeMonth === currentMonth) {
+            if (item.direction === '收入') {
+                income += item.amount
+                console.log('Found income transaction:', item.trade_time, item.amount)
+            } else if (item.direction === '支出') {
+                expense += item.amount
+                console.log('Found expense transaction:', item.trade_time, item.amount)
+            }
+        } else {
+            console.log('Skipping transaction from other month:', item.trade_time, 'Current month:', currentYear, currentMonth)
         }
     })
 
@@ -103,7 +120,7 @@ async function calculateMonthlyStats(alltransactions) {
         expense,
         balance
     }
-    console.log('Monthly stats calculated:', StatCardValue.value)
+    console.log('Monthly stats calculated for current month:', StatCardValue.value)
 }
 //获取交易数据
 async function fetchTransactionData() {

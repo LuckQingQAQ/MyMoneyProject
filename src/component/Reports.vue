@@ -1,58 +1,128 @@
 <template>
-    <header>
-        <h1 class="content-title">报表分析</h1>
-        <p class="content-subtitle">分析你的财务状况和支出趋势</p>
-    </header>
-    <div class="stats-grid">
-        <StatCard :value="10.9" label="本月收入" style="color: #4ADE80;"></StatCard>
-        <StatCard :value="10.9" label="本月支出" style="color: #F87171;"></StatCard>
-        <StatCard :value="10.9" label="本月结余" style="color: #60A5FA;"></StatCard>
+  <header>
+    <h1 class="content-title">报表分析</h1>
+    <p class="content-subtitle">分析你的财务状况和支出趋势</p>
+  </header>
+  <div class="stats-grid">
+    <StatCard :value="StatCardValue.income" label="本月收入" style="color: #4ADE80;"></StatCard>
+    <StatCard :value="StatCardValue.expense" label="本月支出" style="color: #F87171;"></StatCard>
+    <StatCard :value="StatCardValue.balance" label="本月结余" style="color: #60A5FA;"></StatCard>
+  </div>
+
+  <div class="card">
+    <h3 style="margin-bottom: 20px;">支出分类统计</h3>
+    <div style="margin-bottom: 20px;">
+      <el-select v-model="selectedExpenseMonth" placeholder="选择月份" style="width: 200px;">
+        <el-option label="2025年01月" value="2025-01"></el-option>
+        <el-option label="2025年02月" value="2025-02"></el-option>
+        <el-option label="2025年03月" value="2025-03"></el-option>
+        <el-option label="2025年04月" value="2025-04"></el-option>
+      </el-select>
     </div>
-    
-    <div class="card">
-        <h3 style="margin-bottom: 20px;">支出分类统计</h3>
-        <div style="margin-bottom: 20px;">
-            <el-select v-model="selectedExpenseMonth" placeholder="选择月份" style="width: 200px;">
-                <el-option label="2025年01月" value="2025-01"></el-option>
-                <el-option label="2025年02月" value="2025-02"></el-option>
-                <el-option label="2025年03月" value="2025-03"></el-option>
-                <el-option label="2025年04月" value="2025-04"></el-option>
-            </el-select>
-        </div>
-        
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
-            <div ref="expensePieChartRef" class="chart-container"></div>
-            <div ref="expenseBarChartRef" class="chart-container"></div>
-        </div>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+      <div ref="expensePieChartRef" class="chart-container"></div>
+      <div ref="expenseBarChartRef" class="chart-container"></div>
     </div>
-    
-    <div class="card">
-        <h3 style="margin-bottom: 20px;">收入来源分析</h3>
-        <div style="margin-bottom: 20px;">
-            <el-select v-model="selectedIncomeMonth" placeholder="选择月份" style="width: 200px;">
-                <el-option label="2025年01月" value="2025-01"></el-option>
-                <el-option label="2025年02月" value="2025-02"></el-option>
-                <el-option label="2025年03月" value="2025-03"></el-option>
-                <el-option label="2025年04月" value="2025-04"></el-option>
-            </el-select>
-        </div>
-        
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
-            <div ref="incomePieChartRef" class="chart-container"></div>
-            <div ref="incomeBarChartRef" class="chart-container"></div>
-        </div>
+  </div>
+
+  <div class="card">
+    <h3 style="margin-bottom: 20px;">收入来源分析</h3>
+    <div style="margin-bottom: 20px;">
+      <el-select v-model="selectedIncomeMonth" placeholder="选择月份" style="width: 200px;">
+        <el-option label="2025年01月" value="2025-01"></el-option>
+        <el-option label="2025年02月" value="2025-02"></el-option>
+        <el-option label="2025年03月" value="2025-03"></el-option>
+        <el-option label="2025年04月" value="2025-04"></el-option>
+      </el-select>
     </div>
-    
-    <div class="card">
-        <h3 style="margin-bottom: 20px;">月度趋势分析</h3>
-        <div ref="trendChartRef" class="chart-container" style="height: 500px;"></div>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+      <div ref="incomePieChartRef" class="chart-container"></div>
+      <div ref="incomeBarChartRef" class="chart-container"></div>
     </div>
+  </div>
+
+  <div class="card">
+    <h3 style="margin-bottom: 20px;">月度趋势分析</h3>
+    <div ref="trendChartRef" class="chart-container" style="height: 500px;"></div>
+  </div>
 </template>
 
 <script setup>
+import axios from 'axios'
 import { ref, onMounted, watch, nextTick } from 'vue'
 import * as echarts from 'echarts'
 import StatCard from './StatCard.vue'
+const alltransactions = ref([])
+
+const StatCardValue = ref(
+  { income: 0, expense: 0, balance: 0 }
+)
+//计算每月收入支出结余
+watch(alltransactions, () => {
+  calculateMonthlyStats(alltransactions)
+})
+
+
+async function calculateMonthlyStats(alltransactions) {
+  let income = 0
+  let expense = 0
+  const currentDate = new Date()
+  const currentYear = currentDate.getFullYear()
+  const currentMonth = currentDate.getMonth()
+  
+  console.log('Calculating monthly stats for current month:', currentYear, '年', currentMonth + 1, '月')
+  console.log('Total transactions:', alltransactions.value.length)
+  
+  alltransactions.value.forEach(item => {
+    const tradeDate = new Date(item.trade_time)
+    const tradeYear = tradeDate.getFullYear()
+    const tradeMonth = tradeDate.getMonth()
+    
+    // 只计算当前月份的数据
+    if (tradeYear === currentYear && tradeMonth === currentMonth) {
+      if (item.direction === '收入') {
+        income += item.amount
+        console.log('Found income transaction:', item.trade_time, item.amount)
+      } else if (item.direction === '支出') {
+        expense += item.amount
+        console.log('Found expense transaction:', item.trade_time, item.amount)
+      }
+    } else {
+      console.log('Skipping transaction from other month:', item.trade_time, 'Current month:', currentYear, currentMonth)
+    }
+  })
+
+  const balance = income - expense
+
+  StatCardValue.value = {
+    income,
+    expense,
+    balance
+  }
+  console.log('Monthly stats calculated for current month:', StatCardValue.value)
+}
+
+async function fetchTransactionData() {
+  axios.get('http://localhost:3001/api/transactions')
+    .then(({ data }) => {
+      console.log('Fetched transaction data:', data)
+      alltransactions.value = data.data.map(item => ({
+        data_source: item.data_source,
+        trade_time: item.trade_time,
+        trade_type: item.trade_type,
+        counterparty: item.counterparty,
+        description: item.description,
+        direction: item.direction,
+        amount: Number(item.amount)
+      }))
+      console.log('All transactions:', alltransactions.value)
+    })
+    .catch(error => {
+      console.error('Error fetching transaction data:', error)
+    })
+}
 
 const selectedExpenseMonth = ref('2025-04')
 const selectedIncomeMonth = ref('2025-04')
@@ -135,16 +205,16 @@ let expensePieChart, expenseBarChart, incomePieChart, incomeBarChart, trendChart
 const initCharts = () => {
   // 支出环状图
   expensePieChart = echarts.init(expensePieChartRef.value)
-  
+
   // 支出水平条形图
   expenseBarChart = echarts.init(expenseBarChartRef.value)
-  
+
   // 收入环状图
   incomePieChart = echarts.init(incomePieChartRef.value)
-  
+
   // 收入水平条形图
   incomeBarChart = echarts.init(incomeBarChartRef.value)
-  
+
   // 月度趋势图
   trendChart = echarts.init(trendChartRef.value)
 }
@@ -152,7 +222,7 @@ const initCharts = () => {
 // 更新支出图表
 const updateExpenseCharts = () => {
   const data = expenseData[selectedExpenseMonth.value]
-  
+
   // 环状图配置
   const pieOption = {
     tooltip: {
@@ -192,7 +262,7 @@ const updateExpenseCharts = () => {
       }
     ]
   }
-  
+
   // 水平条形图配置
   const barOption = {
     tooltip: {
@@ -230,7 +300,7 @@ const updateExpenseCharts = () => {
       }
     ]
   }
-  
+
   expensePieChart.setOption(pieOption)
   expenseBarChart.setOption(barOption)
 }
@@ -238,7 +308,7 @@ const updateExpenseCharts = () => {
 // 更新收入图表
 const updateIncomeCharts = () => {
   const data = incomeData[selectedIncomeMonth.value]
-  
+
   // 环状图配置
   const pieOption = {
     tooltip: {
@@ -278,7 +348,7 @@ const updateIncomeCharts = () => {
       }
     ]
   }
-  
+
   // 水平条形图配置
   const barOption = {
     tooltip: {
@@ -316,7 +386,7 @@ const updateIncomeCharts = () => {
       }
     ]
   }
-  
+
   incomePieChart.setOption(pieOption)
   incomeBarChart.setOption(barOption)
 }
@@ -407,7 +477,7 @@ const updateTrendChart = () => {
       }
     ]
   }
-  
+
   trendChart.setOption(option)
 }
 
@@ -419,13 +489,14 @@ const incomeBarChartRef = ref(null)
 const trendChartRef = ref(null)
 
 onMounted(() => {
+  fetchTransactionData()
   // 使用 nextTick 确保 DOM 已经渲染
   nextTick(() => {
     initCharts()
     updateExpenseCharts()
     updateIncomeCharts()
     updateTrendChart()
-    
+
     // 响应式处理
     window.addEventListener('resize', () => {
       if (expensePieChart) expensePieChart.resize()
@@ -448,45 +519,45 @@ watch(selectedIncomeMonth, () => {
 </script>
 
 <style lang="scss" scoped>
-
 header {
-    margin-bottom: 30px;
+  margin-bottom: 30px;
 }
 
 .content-title {
-    font-size: 28px;
-    color: #111827;
-    margin-bottom: 8px;
+  font-size: 28px;
+  color: #111827;
+  margin-bottom: 8px;
 }
 
 .content-subtitle {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-    font-size: 14px;
-    color: #6b7280;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  font-size: 14px;
+  color: #6b7280;
 }
 
 .stats-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 20px;
-    margin-bottom: 10px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 20px;
+  margin-bottom: 10px;
 }
 
 .card {
-    background: #ffffff;
-    border-radius: 16px;
-    padding: 25px;
-    margin-bottom: 20px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, .06);
-    transition: transform .3s, box-shadow .3s;
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 25px;
+  margin-bottom: 20px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, .06);
+  transition: transform .3s, box-shadow .3s;
 
-    &:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 8px 30px rgba(0, 0, 0, .08);
-    }
+  &:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 30px rgba(0, 0, 0, .08);
+  }
 }
-    .chart-container {
-        width: 100%;
-        height: 400px;
-    }
+
+.chart-container {
+  width: 100%;
+  height: 400px;
+}
 </style>
