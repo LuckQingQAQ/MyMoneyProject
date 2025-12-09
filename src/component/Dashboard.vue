@@ -109,7 +109,6 @@ async function calculateMonthlyStats(alltransactions) {
                 console.log('Found expense transaction:', item.trade_time, item.amount)
             }
         } else {
-            console.log('Skipping transaction from other month:', item.trade_time, 'Current month:', currentYear, currentMonth)
         }
     })
 

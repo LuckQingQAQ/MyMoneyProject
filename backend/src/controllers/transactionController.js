@@ -5,10 +5,16 @@ export const getAllTransactions = async (req, res) => {
   try {
     const [rows] = await pool.query('SELECT * FROM transactions ORDER BY trade_time');
     
+    // 统一处理金额精度，保留2位小数
+    const formattedRows = rows.map(row => ({
+      ...row,
+      amount: Math.round(row.amount * 100) / 100
+    }));
+    
     res.json({
       success: true,
-      data: rows,
-      count: rows.length
+      data: formattedRows,
+      count: formattedRows.length
     });
   } catch (error) {
     console.error('获取交易记录失败:', error);
@@ -34,9 +40,15 @@ export const getTransactionById = async (req, res) => {
       });
     }
     
+    // 统一处理金额精度，保留2位小数
+    const transaction = {
+      ...rows[0],
+      amount: Math.round(rows[0].amount * 100) / 100
+    };
+    
     res.json({
       success: true,
-      data: rows[0]
+      data: transaction
     });
   } catch (error) {
     console.error('获取交易记录失败:', error);

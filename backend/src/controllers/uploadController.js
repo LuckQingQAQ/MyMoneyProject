@@ -199,19 +199,19 @@ const convertWeChatDirection = (direction) => {
 // 解析微信支付金额
 const parseWeChatAmount = (amountStr) => {
   if (!amountStr) return 0;
-  
+
   // 移除人民币符号和空格
   const cleanAmount = amountStr.replace(/[¥\s]/g, '');
   const amount = parseFloat(cleanAmount);
-  return isNaN(amount) ? 0 : amount;
+  return isNaN(amount) ? 0 : Math.round(amount * 100) / 100; // 保留2位小数
 };
 
 // 解析支付宝金额
 const parseAlipayAmount = (amountStr) => {
   if (!amountStr) return 0;
-  
+
   const amount = parseFloat(amountStr);
-  return isNaN(amount) ? 0 : amount;
+  return isNaN(amount) ? 0 : Math.round(amount * 100) / 100; // 保留2位小数
 };
 
 // 批量插入交易记录
